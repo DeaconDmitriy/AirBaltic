@@ -18,6 +18,10 @@ public class CityPoint : MonoBehaviour
     [TextArea(2, 5)]
     public string[] missionTexts;
 
+    [Header("Destination Card")]
+    [Tooltip("Assign the matching PNG from Assets/Models/AirBalticUI/ (imported as Sprite).")]
+    public Sprite destinationCard;
+
     [Header("Visuals")]
     public Renderer markerRenderer;
     public GameObject pulseEffect;
@@ -89,8 +93,8 @@ public class CityPoint : MonoBehaviour
         {
             _mat.SetColor(BaseColorId, c);
             if (_mat.IsKeywordEnabled("_EMISSION") || _mat.HasProperty(EmissionColorId))
-        {
-            _mat.EnableKeyword("_EMISSION");
+            {
+                _mat.EnableKeyword("_EMISSION");
                 _mat.SetColor(EmissionColorId, c * (state == State.Dimmed ? 0.2f : 2.0f));
             }
         }

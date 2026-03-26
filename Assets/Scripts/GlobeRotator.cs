@@ -28,6 +28,9 @@ public class GlobeRotator : MonoBehaviour
 
     private void Update()
     {
+        // Block globe interaction while the pause menu is open
+        if (MenuController.IsOpen) return;
+
         if (!UnityEngine.XR.XRSettings.isDeviceActive)
         {
 #if UNITY_EDITOR

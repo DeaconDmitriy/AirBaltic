@@ -287,17 +287,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7afc9be95aa39ad40970553c8d3f2960, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CityPoint
-  cityName: Paris
-  cityDescription: "Paris \u2014 capital of France.\n(Text to be filled by the client)"
-  latitude: 48.9
-  longitude: 2.3
+  cityName: England
+  cityDescription: "England (London) — gateway to the UK, a world city of culture, history, and innovation."
+  latitude: 51.51
+  longitude: -0.13
+  destinationCard: {fileID: 21300000, guid: c10d660b036b02349b46cd1af5b82c42, type: 3}
   connectedCities:
   - {fileID: 621524966}
   - {fileID: 1143354327}
   missionTexts:
-  - "Route: Paris \u2192 Riga\n\nAirline Mission:\n(Text to be filled by the client)"
-  - "Route: Paris \u2192 New York\n\nAirline Mission:\n(Text to be filled by the
-    client)"
+  - "Route: England \u2192 Latvia\n\nAirline Mission:\n(To be filled by the client)"
+  - "Route: England \u2192 New York\n\nAirline Mission:\n(To be filled by the client)"
   markerRenderer: {fileID: 16103746}
   pulseEffect: {fileID: 0}
   idleColor: {r: 1, g: 0.15, b: 0.15, a: 1}
@@ -392,8 +392,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 16103744}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.014087249, y: 0, z: -0.3507419, w: 0.93636626}
-  m_LocalPosition: {x: 0.36783355, y: 0.42199552, z: 0.014773722}
+  m_LocalRotation: {x: -0.000752, y: 0, z: -0.3314, w: 0.9435}
+  m_LocalPosition: {x: 0.34961, y: 0.43747, z: -0.000793}
   m_LocalScale: {x: 0.04, y: 0.0032, z: 0.04}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1764,7 +1764,7 @@ Canvas:
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
   m_VertexColorAlwaysGammaSpace: 0
-  m_AdditionalShaderChannelsFlag: 0
+  m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
   m_SortingOrder: 0
@@ -4491,21 +4491,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7afc9be95aa39ad40970553c8d3f2960, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CityPoint
-  cityName: Riga
-  cityDescription: "Riga \u2014 capital of Latvia and main hub of AirBaltic.\n(Text
-    to be filled by the client)"
+  cityName: Latvia
+  cityDescription: "Latvia (Riga) \u2014 Baltic gem and the home hub of AirBaltic, bridging Europe and the world."
   latitude: 56.9
   longitude: 24.1
+  destinationCard: {fileID: 21300000, guid: f66044009e55fe14db7e33f06014d733, type: 3}
   connectedCities:
   - {fileID: 16103745}
   - {fileID: 1143354327}
   - {fileID: 1674520535}
   - {fileID: 1182603555}
+  - {fileID: 901000002}
+  - {fileID: 901000011}
   missionTexts:
-  - "Route: Riga \u2192 Paris\n\nAirline Mission:\n(Text to be filled by the client)"
-  - "Route: Riga \u2192 New York\n\nAirline Mission:\n(Text to be filled by the client)"
-  - "Route: Riga \u2192 Dubai\n\nAirline Mission:\n(Text to be filled by the client)"
-  - "Route: Riga \u2192 Tokyo\n\nAirline Mission:\n(Text to be filled by the client)"
+  - "Route: Latvia \u2192 England\n\nAirline Mission:\n(To be filled by the client)"
+  - "Route: Latvia \u2192 New York\n\nAirline Mission:\n(To be filled by the client)"
+  - "Route: Latvia \u2192 Dubai\n\nAirline Mission:\n(To be filled by the client)"
+  - "Route: Latvia \u2192 Japan\n\nAirline Mission:\n(To be filled by the client)"
+  - "Route: Latvia \u2192 Canada\n\nAirline Mission:\n(To be filled by the client)"
+  - "Route: Latvia \u2192 Russia\n\nAirline Mission:\n(To be filled by the client)"
   markerRenderer: {fileID: 621524967}
   pulseEffect: {fileID: 0}
   idleColor: {r: 1, g: 0.15, b: 0.15, a: 1}
@@ -5489,7 +5493,7 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
+    rgba: 4292467161
   m_fontColor: {r: 0.85, g: 0.85, b: 0.85, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
@@ -5502,7 +5506,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
@@ -5659,6 +5663,62 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 817314149}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &834491632
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 834491634}
+  - component: {fileID: 834491633}
+  m_Layer: 0
+  m_Name: AudioManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &834491633
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 834491632}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b733cb9630cee2040bb3b78a1843ab0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AudioManager
+  backgroundMusic: {fileID: 8300000, guid: 22860e720f9cc3b4cb60dbda3b21def8, type: 3}
+  musicVolume: 0.4
+  takeOffSound: {fileID: 8300000, guid: 435080a791762ae4b87868536bb90f43, type: 3}
+  landingSound: {fileID: 8300000, guid: 2a20357d530ae7e4bbf60efcc2d83244, type: 3}
+  cityAmbienceSound: {fileID: 8300000, guid: 249efd909f944e143853bcb842b6aa86, type: 3}
+  ambienceVolume: 0.5
+  buttonSounds:
+  - {fileID: 8300000, guid: f5fd0907b0ebf754fb3eb327b792fc71, type: 3}
+  - {fileID: 8300000, guid: 982bc2175e6b2f34d98bd2a8905cd47f, type: 3}
+  - {fileID: 8300000, guid: 581fd3915f6a23c45b78b5553d5cf4e4, type: 3}
+  - {fileID: 8300000, guid: 90f3cfd69f25c664fbde92faf7ccf734, type: 3}
+  sfxVolume: 1
+--- !u!4 &834491634
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 834491632}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -1.50551, y: -0, z: 1.16087}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &868210669
 GameObject:
@@ -5832,7 +5892,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
@@ -7517,17 +7577,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CityPoint
   cityName: New York
-  cityDescription: "New York \u2014 the largest city in the USA.\n(Text to be filled
-    by the client)"
+  cityDescription: "New York \u2014 the city that never sleeps. An iconic global metropolis of culture, finance, and freedom."
   latitude: 40.7
   longitude: -74
+  destinationCard: {fileID: 21300000, guid: ac1d558367001a34cafb879dba9b30bb, type: 3}
   connectedCities:
   - {fileID: 621524966}
   - {fileID: 16103745}
   missionTexts:
-  - "Route: New York \u2192 Riga\n\nAirline Mission:\n(Text to be filled by the client)"
-  - "Route: New York \u2192 Paris\n\nAirline Mission:\n(Text to be filled by the
-    client)"
+  - "Route: New York \u2192 Latvia\n\nAirline Mission:\n(To be filled by the client)"
+  - "Route: New York \u2192 England\n\nAirline Mission:\n(To be filled by the client)"
   markerRenderer: {fileID: 1143354328}
   pulseEffect: {fileID: 0}
   idleColor: {r: 1, g: 0.15, b: 0.15, a: 1}
@@ -7881,16 +7940,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7afc9be95aa39ad40970553c8d3f2960, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CityPoint
-  cityName: Tokyo
-  cityDescription: "Tokyo \u2014 capital of Japan.\n(Text to be filled by the client)"
+  cityName: Japan
+  cityDescription: "Japan (Tokyo) — a fusion of ultramodern technology and ancient tradition at the edge of the Pacific."
   latitude: 35.7
   longitude: 139.7
+  destinationCard: {fileID: 21300000, guid: 4f6bb98bf39b85249992e961d8c9ad0b, type: 3}
   connectedCities:
   - {fileID: 621524966}
   - {fileID: 1674520535}
   missionTexts:
-  - "Route: Tokyo \u2192 Riga\n\nAirline Mission:\n(Text to be filled by the client)"
-  - "Route: Tokyo \u2192 Dubai\n\nAirline Mission:\n(Text to be filled by the client)"
+  - "Route: Japan \u2192 Latvia\n\nAirline Mission:\n(To be filled by the client)"
+  - "Route: Japan \u2192 Dubai\n\nAirline Mission:\n(To be filled by the client)"
   markerRenderer: {fileID: 1182603556}
   pulseEffect: {fileID: 0}
   idleColor: {r: 1, g: 0.15, b: 0.15, a: 1}
@@ -11810,16 +11870,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CityPoint
   cityName: Dubai
-  cityDescription: "Dubai \u2014 business hub of the UAE.\n(Text to be filled by
-    the client)"
+  cityDescription: "Dubai \u2014 where the desert meets the sky. A visionary hub of luxury, innovation, and global trade."
   latitude: 25.2
   longitude: 55.3
+  destinationCard: {fileID: 21300000, guid: 9f657f35d3c41d84cb153c53cc20e331, type: 3}
   connectedCities:
   - {fileID: 621524966}
   - {fileID: 1182603555}
   missionTexts:
-  - "Route: Dubai \u2192 Riga\n\nAirline Mission:\n(Text to be filled by the client)"
-  - "Route: Dubai \u2192 Tokyo\n\nAirline Mission:\n(Text to be filled by the client)"
+  - "Route: Dubai \u2192 Latvia\n\nAirline Mission:\n(To be filled by the client)"
+  - "Route: Dubai \u2192 Japan\n\nAirline Mission:\n(To be filled by the client)"
   markerRenderer: {fileID: 1674520536}
   pulseEffect: {fileID: 0}
   idleColor: {r: 1, g: 0.15, b: 0.15, a: 1}
@@ -13327,104 +13387,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 370541044}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1866628522
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1866628524}
-  - component: {fileID: 1866628523}
-  m_Layer: 0
-  m_Name: OVRPassthroughLayer
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1866628523
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1866628522}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 555725d48e9051a4bb6b8d45178c2fdd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Oculus.VR::OVRPassthroughLayer
-  projectionSurfaceType: 1
-  overlayType: 1
-  compositionDepth: 0
-  hidden: 0
-  overridePerLayerColorScaleAndOffset: 0
-  colorScale: {x: 1, y: 1, z: 1, w: 1}
-  colorOffset: {x: 0, y: 0, z: 0, w: 0}
-  passthroughLayerResumed:
-    m_PersistentCalls:
-      m_Calls: []
-  colorMapEditorType_: 0
-  colorMapEditorGradient:
-    serializedVersion: 2
-    key0: {r: 0, g: 0, b: 0, a: 1}
-    key1: {r: 1, g: 1, b: 1, a: 1}
-    key2: {r: 0, g: 0, b: 0, a: 0}
-    key3: {r: 0, g: 0, b: 0, a: 0}
-    key4: {r: 0, g: 0, b: 0, a: 0}
-    key5: {r: 0, g: 0, b: 0, a: 0}
-    key6: {r: 0, g: 0, b: 0, a: 0}
-    key7: {r: 0, g: 0, b: 0, a: 0}
-    ctime0: 0
-    ctime1: 65535
-    ctime2: 0
-    ctime3: 0
-    ctime4: 0
-    ctime5: 0
-    ctime6: 0
-    ctime7: 0
-    atime0: 0
-    atime1: 65535
-    atime2: 0
-    atime3: 0
-    atime4: 0
-    atime5: 0
-    atime6: 0
-    atime7: 0
-    m_Mode: 0
-    m_ColorSpace: -1
-    m_NumColorKeys: 2
-    m_NumAlphaKeys: 2
-  colorMapEditorContrast: 0
-  colorMapEditorBrightness: 0
-  colorMapEditorPosterize: 0
-  colorMapEditorSaturation: 0
-  _colorLutSourceTexture: {fileID: 0}
-  _colorLutTargetTexture: {fileID: 0}
-  _lutWeight: 1
-  _flipLutY: 1
-  serializedSurfaceGeometry: []
-  textureOpacity_: 1
-  edgeRenderingEnabled_: 0
-  edgeColor_: {r: 1, g: 1, b: 1, a: 1}
-  colorMapType: 0
---- !u!4 &1866628524
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1866628522}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1873545863
 GameObject:
@@ -15117,3 +15079,288 @@ SceneRoots:
   - {fileID: 247810325}
   - {fileID: 1950151100}
   - {fileID: 1687800324}
+  - {fileID: 834491634}
+--- !u!1 &901000000
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 901000006}
+  - component: {fileID: 901000002}
+  - component: {fileID: 901000003}
+  - component: {fileID: 901000004}
+  - component: {fileID: 901000005}
+  m_Layer: 0
+  m_Name: City_Canada
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &901000002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 901000000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7afc9be95aa39ad40970553c8d3f2960, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CityPoint
+  cityName: Canada
+  cityDescription: "Canada \u2014 vast wilderness and vibrant cities stretching from the Atlantic to the Pacific."
+  latitude: 43.65
+  longitude: -79.38
+  destinationCard: {fileID: 21300000, guid: 06b9a269211919a4296238567ba5d48f, type: 3}
+  connectedCities:
+  - {fileID: 621524966}
+  missionTexts:
+  - "Route: Canada \u2192 Latvia\n\nAirline Mission:\n(To be filled by the client)"
+  markerRenderer: {fileID: 901000003}
+  pulseEffect: {fileID: 0}
+  idleColor: {r: 1, g: 0.15, b: 0.15, a: 1}
+  selectedColor: {r: 1, g: 0.65, b: 0, a: 1}
+  reachableColor: {r: 0.1, g: 1, b: 0.2, a: 1}
+  dimmedColor: {r: 0.25, g: 0.25, b: 0.25, a: 1}
+--- !u!23 &901000003
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 901000000}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 57dbeb61a6c73c242aa092c89edd0989, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 1
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!136 &901000004
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 901000000}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 1
+  m_Height: 2
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!33 &901000005
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 901000000}
+  m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!4 &901000006
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 901000000}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.38644, y: 0, z: -0.072680, w: 0.91939}
+  m_LocalPosition: {x: 0.074749, y: 0.387330, z: -0.397538}
+  m_LocalScale: {x: 0.04, y: 0.0032, z: 0.04}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1683448544}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &901000009
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 901000015}
+  - component: {fileID: 901000011}
+  - component: {fileID: 901000012}
+  - component: {fileID: 901000013}
+  - component: {fileID: 901000014}
+  m_Layer: 0
+  m_Name: City_Russia
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &901000011
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 901000009}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7afc9be95aa39ad40970553c8d3f2960, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CityPoint
+  cityName: Russia
+  cityDescription: "Russia (Moscow) \u2014 the world's largest country, where centuries of history meet modern ambition."
+  latitude: 55.75
+  longitude: 37.62
+  destinationCard: {fileID: 21300000, guid: 81e32fc75776a9847a1a67e3837ad12c, type: 3}
+  connectedCities:
+  - {fileID: 621524966}
+  missionTexts:
+  - "Route: Russia \u2192 Latvia\n\nAirline Mission:\n(To be filled by the client)"
+  markerRenderer: {fileID: 901000012}
+  pulseEffect: {fileID: 0}
+  idleColor: {r: 1, g: 0.15, b: 0.15, a: 1}
+  selectedColor: {r: 1, g: 0.65, b: 0, a: 1}
+  reachableColor: {r: 0.1, g: 1, b: 0.2, a: 1}
+  dimmedColor: {r: 0.25, g: 0.25, b: 0.25, a: 1}
+--- !u!23 &901000012
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 901000009}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 57dbeb61a6c73c242aa092c89edd0989, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 1
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!136 &901000013
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 901000009}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 1
+  m_Height: 2
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!33 &901000014
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 901000009}
+  m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!4 &901000015
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 901000009}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.18027, y: 0, z: -0.23436, w: 0.95524}
+  m_LocalPosition: {x: 0.25032, y: 0.46250, z: 0.19253}
+  m_LocalScale: {x: 0.04, y: 0.0032, z: 0.04}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1683448544}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

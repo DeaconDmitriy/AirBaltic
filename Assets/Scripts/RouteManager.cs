@@ -17,32 +17,77 @@ public class RouteManager : MonoBehaviour
     public int   arcSegments = 40;
     public float arcLift     = 0.08f;
 
+    [Header("City Proximity Audio")]
+    [Tooltip("How close the camera must get to a city dot (world units) before city ambience plays.")]
+    public float cityAudioRadius = 0.5f;
+
     public CityPoint[] AllCities => allCities;
 
+    /// <summary>True when no city has been selected yet.</summary>
+    public bool IsIdle => _state == AppState.Idle;
+
     private enum AppState { Idle, DepartureSelected, RouteComplete }
-    private AppState   _state      = AppState.Idle;
-    private CityPoint  _departure;
-    private CityPoint  _destination;
+    private AppState     _state      = AppState.Idle;
+    private CityPoint    _departure;
+    private CityPoint    _destination;
+    private CityPoint    _transfer;       // null = direct route; non-null = via this city
     private LineRenderer _line;
-    private Transform  _rightAnchor;
+    private Transform    _rightAnchor;
+
+    // FIX B-004: cache VRPointer on Start instead of FindFirstObjectByType every frame
+    private VRPointer _vrPointer;
+
+    // Proximity audio state — tracks which city we are currently "near"
+    private CityPoint _proxCity;
+    private Transform _headTransform;   // camera / headset centre eye
+
+    // ── Lifecycle ─────────────────────────────────────────────────────
 
     private void Awake()
     {
-        Instance = this;
-        _line    = GetComponent<LineRenderer>();
+        // FIX B-003: proper singleton with destroy-guard
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+        Instance      = this;
+        _line         = GetComponent<LineRenderer>();
         _line.enabled = false;
     }
 
     private void Start()
     {
         var rig = FindFirstObjectByType<OVRCameraRig>();
-        if (rig != null) _rightAnchor = rig.rightControllerAnchor;
+        if (rig != null)
+        {
+            _rightAnchor   = rig.rightControllerAnchor;
+            _headTransform = rig.centerEyeAnchor;        // VR: centre-eye = head position
+        }
+
+        // Editor fallback: use Camera.main when no XR device is active
+        if (_headTransform == null)
+            _headTransform = Camera.main?.transform;
 
         if (allCities == null || allCities.Length == 0)
             allCities = FindObjectsByType<CityPoint>(FindObjectsSortMode.None);
 
+        // FIX B-004: cache once, not every Update frame
+        _vrPointer = FindFirstObjectByType<VRPointer>();
+
+        // FIX B-002: auto-initialise PlaneGrabHandler so _routeManager is never null
+        if (planeController != null)
+        {
+            var grabHandler = planeController.GetComponent<PlaneGrabHandler>();
+            grabHandler?.Initialize(this);
+        }
+
         ResetAllCities();
     }
+
+    // FIX B-003: clear singleton reference so scene reloads start clean
+    private void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
+    }
+
+    // ── Update ────────────────────────────────────────────────────────
 
     private void Update()
     {
@@ -55,32 +100,41 @@ public class RouteManager : MonoBehaviour
 
         if (_state == AppState.RouteComplete) return;
 
-        if (FindFirstObjectByType<VRPointer>() == null)
+        // FIX B-004: use cached reference — no FindFirstObjectByType per frame
+        if (_vrPointer == null)
             HandleCityRaycast();
+
+        // Proximity-based city audio: play city sound when camera is close to any city dot
+        UpdateProximityAudio();
     }
 
     private void LateUpdate()
-                {
+    {
         UpdateRouteLine();
     }
+
+    // ── Public API ────────────────────────────────────────────────────
 
     public void OnCityClicked(CityPoint city)
     {
         if (_state == AppState.RouteComplete) return;
+
+        AudioManager.Instance?.PlayButtonSound(0);
+
         OnCityTapped(city);
-                }
+    }
 
     public void OnPlaneReleased(Vector3 worldPosition)
     {
         if (_state != AppState.DepartureSelected) return;
 
         const float snapRadius = 0.30f;
-        CityPoint nearest = null;
-        float nearestDist = snapRadius;
+        CityPoint nearest    = null;
+        float     nearestDist = snapRadius;
 
         foreach (var city in allCities)
         {
-            if (city.CurrentState != CityPoint.State.Reachable) continue;
+            if (city == _departure) continue;
             float d = Vector3.Distance(worldPosition, city.transform.position);
             if (d < nearestDist) { nearestDist = d; nearest = city; }
         }
@@ -93,9 +147,56 @@ public class RouteManager : MonoBehaviour
     {
         if (_state != AppState.DepartureSelected) return;
 
-        if (city.CurrentState == CityPoint.State.Reachable) CompleteRoute(city);
-        else                                                  planeController?.ReturnToDeparture();
+        if (city != _departure) CompleteRoute(city);
+        else                    planeController?.ReturnToDeparture();
     }
+
+    public void ResetRoute() => ResetState();
+
+    // ── Proximity Audio ───────────────────────────────────────────────
+
+    /// <summary>
+    /// Checks which city (if any) the camera is within cityAudioRadius of.
+    /// Plays city ambience on enter, stops it on exit.
+    /// Only active in the Idle state — once a departure is selected the
+    /// user has already committed; ambience is then managed by route logic.
+    /// </summary>
+    private void UpdateProximityAudio()
+    {
+        // Only run in Idle state and when we have a camera reference
+        if (_state != AppState.Idle || allCities == null) return;
+
+        // Refresh camera ref in case Camera.main changed (e.g. scene load)
+        if (_headTransform == null)
+            _headTransform = Camera.main?.transform;
+        if (_headTransform == null) return;
+
+        // Find the nearest city within the proximity radius
+        CityPoint nearest     = null;
+        float     nearestDist = cityAudioRadius;
+
+        foreach (var city in allCities)
+        {
+            float d = Vector3.Distance(_headTransform.position, city.transform.position);
+            if (d < nearestDist)
+            {
+                nearestDist = d;
+                nearest     = city;
+            }
+        }
+
+        // Only act on changes (enter / exit) to avoid hammering AudioManager every frame
+        if (nearest == _proxCity) return;
+
+        _proxCity = nearest;
+
+        if (nearest != null)
+            AudioManager.Instance?.PlayCityAmbience();
+        else
+            AudioManager.Instance?.StopAmbience();
+    }
+
+    // ── Private Logic ─────────────────────────────────────────────────
 
     private void HandleCityRaycast()
     {
@@ -122,10 +223,8 @@ public class RouteManager : MonoBehaviour
             case AppState.DepartureSelected:
                 if (city == _departure)
                     ResetState();
-                else if (city.CurrentState == CityPoint.State.Reachable)
-                    CompleteRoute(city);
                 else
-                    uiManager?.ShowInfoCard(city);
+                    CompleteRoute(city);   // all cities are now reachable
                 break;
         }
     }
@@ -134,43 +233,57 @@ public class RouteManager : MonoBehaviour
     {
         _state     = AppState.DepartureSelected;
         _departure = city;
+        _proxCity  = null;   // hand off ambience control to route logic
 
         city.SetState(CityPoint.State.Selected);
 
+        // All other cities are reachable — routes exist (direct or via transfer)
         foreach (var c in allCities)
         {
             if (c == city) continue;
-            c.SetState(city.IsConnectedTo(c) ? CityPoint.State.Reachable : CityPoint.State.Dimmed);
+            c.SetState(CityPoint.State.Reachable);
         }
 
         uiManager?.ShowInfoCard(city);
         planeController?.SpawnAt(city);
+
+        // Ensure ambience keeps playing after click (proximity may have already started it)
+        AudioManager.Instance?.PlayCityAmbience();
     }
 
     private void CompleteRoute(CityPoint destination)
     {
         _state       = AppState.RouteComplete;
         _destination = destination;
+        _transfer    = FindTransferCity(_departure, destination);
 
-        DrawArc(_departure.transform.position, destination.transform.position);
+        if (_transfer != null)
+            DrawTransferArc(_departure.transform.position,
+                            _transfer.transform.position,
+                            destination.transform.position);
+        else
+            DrawArc(_departure.transform.position, destination.transform.position);
 
-        string missionText = _departure.GetMissionText(destination);
-        uiManager?.ShowMissionCard(_departure, destination, missionText);
+        uiManager?.ShowMissionCard(_departure, _transfer, destination);
 
         planeController?.FlyTo(destination);
-    }
 
-    public void ResetRoute() => ResetState();
+        // Ambience stops when the plane takes off
+        AudioManager.Instance?.StopAmbience();
+    }
 
     private void ResetState()
     {
-        _state       = AppState.Idle;
-        _departure   = null;
-        _destination = null;
+        _state        = AppState.Idle;
+        _departure    = null;
+        _destination  = null;
+        _transfer     = null;
+        _proxCity     = null;   // reset proximity so it re-evaluates on next frame
         _line.enabled = false;
         ResetAllCities();
         uiManager?.HideAll();
         planeController?.Hide();
+        AudioManager.Instance?.StopAmbience();
     }
 
     private void ResetAllCities()
@@ -179,11 +292,54 @@ public class RouteManager : MonoBehaviour
             c.SetState(CityPoint.State.Idle);
     }
 
+    // ── Transfer Routing ──────────────────────────────────────────────
+
+    /// <summary>
+    /// Returns an intermediate city if no direct route exists between
+    /// <paramref name="from"/> and <paramref name="to"/>, or null for a direct route.
+    /// A route is "direct" when either city has the other in its connectedCities array.
+    /// Otherwise Latvia (the AirBaltic hub) is preferred as the transfer point.
+    /// </summary>
+    private CityPoint FindTransferCity(CityPoint from, CityPoint to)
+    {
+        // Direct if either city lists the other as a connection
+        if (HasDirectRoute(from, to)) return null;
+
+        // Prefer Latvia as hub
+        foreach (var city in allCities)
+        {
+            if (city == from || city == to) continue;
+            if (city.cityName == "Latvia" &&
+                HasDirectRoute(from, city) &&
+                HasDirectRoute(city, to))
+                return city;
+        }
+
+        // Generic 1-hop fallback (any city reachable from both)
+        foreach (var city in allCities)
+        {
+            if (city == from || city == to) continue;
+            if (HasDirectRoute(from, city) && HasDirectRoute(city, to))
+                return city;
+        }
+
+        // No intermediate found — display as direct anyway
+        return null;
+    }
+
+    /// <summary>Returns true if a→b or b→a exists in either city's connectedCities.</summary>
+    private static bool HasDirectRoute(CityPoint a, CityPoint b) =>
+        a.IsConnectedTo(b) || b.IsConnectedTo(a);
+
+    // ── Arc Line ──────────────────────────────────────────────────────
+
+    private Transform _globeCache;
     private Vector3 GlobeCenter()
     {
         if (globeTransform != null) return globeTransform.position;
+        if (_globeCache != null)    return _globeCache.position;
         var g = GameObject.Find("Globe");
-        if (g != null) { globeTransform = g.transform; return g.transform.position; }
+        if (g != null) { _globeCache = g.transform; return g.transform.position; }
         return Vector3.zero;
     }
 
@@ -206,10 +362,54 @@ public class RouteManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Draws a two-segment arc: from → via → to.
+    /// Each leg gets arcSegments points; the shared midpoint is not duplicated.
+    /// </summary>
+    private void DrawTransferArc(Vector3 from, Vector3 via, Vector3 to)
+    {
+        int total = arcSegments * 2 + 1;
+        _line.enabled       = true;
+        _line.positionCount = total;
+
+        Vector3 center = GlobeCenter();
+
+        // Leg 1: from → via
+        Vector3 fromRel = from - center;
+        Vector3 viaRel  = via  - center;
+        float   r1      = fromRel.magnitude;
+
+        for (int i = 0; i <= arcSegments; i++)
+        {
+            float   t        = i / (float)arcSegments;
+            Vector3 onSphere = Vector3.Slerp(fromRel.normalized, viaRel.normalized, t) * r1;
+            float   lift     = arcLift * Mathf.Sin(t * Mathf.PI);
+            _line.SetPosition(i, center + onSphere + onSphere.normalized * lift);
+        }
+
+        // Leg 2: via → to  (skip index 0 to avoid duplicating the midpoint)
+        Vector3 toRel = to - center;
+        float   r2    = viaRel.magnitude;
+
+        for (int i = 1; i <= arcSegments; i++)
+        {
+            float   t        = i / (float)arcSegments;
+            Vector3 onSphere = Vector3.Slerp(viaRel.normalized, toRel.normalized, t) * r2;
+            float   lift     = arcLift * Mathf.Sin(t * Mathf.PI);
+            _line.SetPosition(arcSegments + i, center + onSphere + onSphere.normalized * lift);
+        }
+    }
+
     private void UpdateRouteLine()
     {
         if (_state != AppState.RouteComplete) return;
         if (_departure == null || _destination == null) return;
-        DrawArc(_departure.transform.position, _destination.transform.position);
+
+        if (_transfer != null)
+            DrawTransferArc(_departure.transform.position,
+                            _transfer.transform.position,
+                            _destination.transform.position);
+        else
+            DrawArc(_departure.transform.position, _destination.transform.position);
     }
 }

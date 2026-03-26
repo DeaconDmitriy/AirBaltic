@@ -1,5 +1,14 @@
 using UnityEngine;
 
+/// <summary>
+/// VR laser pointer for the right controller.
+/// Responsibilities:
+///   • Draw the laser line each frame
+///   • On index trigger press → forward the hit city to RouteManager
+///
+/// City ambience is handled by RouteManager.UpdateProximityAudio() (distance-based),
+/// NOT by this pointer — so no hover logic lives here.
+/// </summary>
 [RequireComponent(typeof(LineRenderer))]
 public class VRPointer : MonoBehaviour
 {
@@ -7,10 +16,12 @@ public class VRPointer : MonoBehaviour
     public OVRCameraRig cameraRig;
 
     [Header("Settings")]
-    public float maxRayDistance = 12f;
-    public LayerMask rayMask = ~0;
+    public float     maxRayDistance = 12f;
+    public LayerMask rayMask        = ~0;
 
     private LineRenderer _line;
+
+    // ── Lifecycle ─────────────────────────────────────────────────────
 
     void Awake()
     {
@@ -28,6 +39,13 @@ public class VRPointer : MonoBehaviour
 
     void Update()
     {
+        // On PC (no XR device) hide the laser completely
+        if (!UnityEngine.XR.XRSettings.isDeviceActive)
+        {
+            if (_line.enabled) _line.enabled = false;
+            return;
+        }
+
         if (cameraRig == null) return;
 
         Transform anchor  = cameraRig.rightHandAnchor;
@@ -39,7 +57,10 @@ public class VRPointer : MonoBehaviour
         {
             endPt = hit.point;
 
-            if (OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger, OVRInput.Controller.RTouch))
+            // When the pause menu is open MenuController handles its own trigger input;
+            // skip city-selection so the trigger press is not double-handled.
+            if (!MenuController.IsOpen &&
+                OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger, OVRInput.Controller.RTouch))
             {
                 CityPoint city = hit.collider.GetComponentInParent<CityPoint>();
                 if (city != null && RouteManager.Instance != null)
@@ -47,6 +68,9 @@ public class VRPointer : MonoBehaviour
             }
         }
 
+        // Always draw the laser — when the menu is open the beam points at it,
+        // giving the player a clear aiming cue for the menu buttons.
+        _line.enabled = true;
         _line.SetPosition(0, origin);
         _line.SetPosition(1, endPt);
     }

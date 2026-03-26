@@ -1,6 +1,10 @@
 using System.Collections;
 using UnityEngine;
 
+/// <summary>
+/// Controls the AirBaltic plane model: spawning, dragging, arc flight, and return.
+/// Audio is fully delegated to AudioManager (no internal AudioSource needed).
+/// </summary>
 [RequireComponent(typeof(Collider))]
 public class PlaneController : MonoBehaviour
 {
@@ -23,6 +27,7 @@ public class PlaneController : MonoBehaviour
     [Header("Drag (VR)")]
     public float dragDepth = 0.6f;
 
+    /// <summary>True while the player is dragging the plane with the index trigger.</summary>
     public bool IsDragging { get; private set; }
 
     private Transform _rightAnchor;
@@ -31,6 +36,8 @@ public class PlaneController : MonoBehaviour
     private Vector3   _normalScale;
     private CityPoint _departureCopy;
     private Vector3   _departureWorldPos;
+
+    // ── Lifecycle ─────────────────────────────────────────────────────
 
     private void Start()
     {
@@ -50,6 +57,8 @@ public class PlaneController : MonoBehaviour
 
         HandleDrag();
     }
+
+    // ── Public API ────────────────────────────────────────────────────
 
     public void SpawnAt(CityPoint city)
     {
@@ -100,6 +109,8 @@ public class PlaneController : MonoBehaviour
         gameObject.SetActive(false);
     }
 
+    // ── Drag (VR index trigger) ───────────────────────────────────────
+
     private void HandleDrag()
     {
         if (_rightAnchor == null) return;
@@ -115,11 +126,13 @@ public class PlaneController : MonoBehaviour
                 (hit.collider.gameObject == gameObject || hit.collider.transform.IsChildOf(transform)))
                 IsDragging = true;
         }
+
         if (IsDragging && trig)
         {
             transform.position = _rightAnchor.position + _rightAnchor.forward * dragDepth;
             transform.rotation = _rightAnchor.rotation * Quaternion.Euler(0, modelYawOffset, 0);
         }
+
         if (IsDragging && trigUp)
         {
             IsDragging = false;
@@ -129,8 +142,8 @@ public class PlaneController : MonoBehaviour
 
     private void OnReleased()
     {
-        CityPoint nearest = null;
-        float nearestDist = snapRadius;
+        CityPoint nearest     = null;
+        float     nearestDist = snapRadius;
 
         var manager = RouteManager.Instance;
         if (manager != null)
@@ -141,9 +154,12 @@ public class PlaneController : MonoBehaviour
                 if (d < nearestDist) { nearestDist = d; nearest = city; }
             }
         }
+
         if (nearest != null) manager.OnPlaneDroppedOnCity(nearest);
         else                 ReturnToDeparture();
     }
+
+    // ── Coroutines ────────────────────────────────────────────────────
 
     private IEnumerator PopIn()
     {
@@ -161,6 +177,9 @@ public class PlaneController : MonoBehaviour
     private IEnumerator FlyArc(Vector3 from, Vector3 to, bool arcFlight)
     {
         _flying = true;
+
+        // Takeoff sound via AudioManager
+        if (arcFlight) AudioManager.Instance?.PlayTakeOff();
 
         Transform  globe   = globeTransform;
         Vector3    center0 = GetGlobeCenter();
@@ -196,6 +215,7 @@ public class PlaneController : MonoBehaviour
             }
             transform.position = pos;
 
+            // Orient nose toward travel direction
             if (arcFlight && r > 0.001f)
             {
                 float   tLook        = Mathf.Clamp01(ts + 0.03f);
@@ -208,6 +228,7 @@ public class PlaneController : MonoBehaviour
                                        * Quaternion.Euler(0, modelYawOffset, 0);
             }
 
+            // Scale shrinks to 0 in the last 15% of the flight
             float scaleT = (t > 0.85f)
                 ? Mathf.SmoothStep(1f, 0f, (t - 0.85f) / 0.15f)
                 : 1f;
@@ -216,18 +237,27 @@ public class PlaneController : MonoBehaviour
             yield return null;
         }
 
+        // Land: snap to final position, play landing sound, hide plane
         Quaternion finalRot  = globe != null ? globe.rotation : Quaternion.identity;
         transform.position   = GetGlobeCenter() + finalRot * toRelLocal;
         transform.localScale = Vector3.zero;
         _flying              = false;
+
+        // Landing sound via AudioManager
+        if (arcFlight) AudioManager.Instance?.PlayLanding();
+
         gameObject.SetActive(false);
     }
 
+    // ── Helpers ───────────────────────────────────────────────────────
+
+    private Transform _globeCache;
     private Vector3 GetGlobeCenter()
     {
         if (globeTransform != null) return globeTransform.position;
+        if (_globeCache != null)    return _globeCache.position;
         var g = GameObject.Find("Globe");
-        if (g != null) { globeTransform = g.transform; return g.transform.position; }
+        if (g != null) { _globeCache = g.transform; return g.transform.position; }
         return Vector3.zero;
     }
 

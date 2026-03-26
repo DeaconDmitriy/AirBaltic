@@ -3,6 +3,19 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 #endif
 
+/// <summary>
+/// PC editor simulation of VR controls. Disabled automatically when an XR device is active.
+///
+/// Controls:
+///   WASD / Arrows / Q / E  — move camera
+///   Right-click drag        — look around
+///   Left-click              — select city (raycast from camera)
+///   R                       — reset route
+///   F                       — toggle in-game menu
+///
+/// City ambience is handled by RouteManager.UpdateProximityAudio() — no hover logic here.
+/// Move the camera close to a city dot with WASD to trigger the sound.
+/// </summary>
 [DefaultExecutionOrder(-50)]
 public class EditorTestBridge : MonoBehaviour
 {
@@ -14,6 +27,8 @@ public class EditorTestBridge : MonoBehaviour
     private float  _pitch, _yaw;
     private bool   _mouseCapture;
     private Camera _cam;
+
+    // ── Lifecycle ─────────────────────────────────────────────────────
 
     private void Start()
     {
@@ -43,6 +58,8 @@ public class EditorTestBridge : MonoBehaviour
         HandleClick(mouse);
         HandleHotkeys(keyboard);
     }
+
+    // ── Input Handlers ────────────────────────────────────────────────
 
     private void HandleMouseCapture(Mouse mouse)
     {
@@ -86,6 +103,8 @@ public class EditorTestBridge : MonoBehaviour
     {
         if (!mouse.leftButton.wasPressedThisFrame) return;
         if (_cam == null) return;
+        // Don't forward city clicks when the pause menu is handling input
+        if (MenuController.IsOpen) return;
 
         Ray ray = _cam.ScreenPointToRay(mouse.position.ReadValue());
         if (!Physics.Raycast(ray, out RaycastHit hit, 30f)) return;
@@ -102,9 +121,8 @@ public class EditorTestBridge : MonoBehaviour
 
         if (kb.fKey.wasPressedThisFrame)
         {
-            var menus = Object.FindObjectsByType<MenuController>(FindObjectsSortMode.None);
-            foreach (var m in menus)
-                m.ToggleInGameMenu();
+            // F key toggles pause menu (matches OVR Start button in VR)
+            MenuController.Instance?.ToggleMenu();
         }
     }
 #endif
