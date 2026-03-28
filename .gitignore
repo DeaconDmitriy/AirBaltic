@@ -57,3 +57,6 @@ Desktop.ini
 
 # VS config (IDE-specific, do not commit)
 .vsconfig
+
+# This file itself (keep gitignore private)
+.gitignore
