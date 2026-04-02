@@ -276,9 +276,11 @@ public class MenuController : MonoBehaviour
         if (!Physics.Raycast(ray, out RaycastHit hit, 10f)) { SetHover(-1); return; }
         if (hit.collider.gameObject != _menuRoot)            { SetHover(-1); return; }
 
+        // InverseTransformPoint returns coords in local space (units = canvas pixels,
+        // since localScale = SCALE). Divide by raw panel dimensions to get 0–1 UV.
         Vector3 local = _menuRoot.transform.InverseTransformPoint(hit.point);
-        float u = local.x / (PANEL_W * SCALE) + 0.5f;
-        float v = local.y / (PANEL_H * SCALE) + 0.5f;
+        float u = local.x / PANEL_W + 0.5f;
+        float v = local.y / PANEL_H + 0.5f;
 
         bool inSettings = _settingsPanel != null && _settingsPanel.activeSelf;
 
@@ -387,9 +389,11 @@ public class MenuController : MonoBehaviour
         rt.sizeDelta  = new Vector2(PANEL_W, PANEL_H);
         rt.localScale = Vector3.one * SCALE;
 
-        // BoxCollider: VR Physics.Raycast hits this
+        // BoxCollider: VR Physics.Raycast hits this.
+        // Size is in LOCAL space — the canvas localScale is SCALE (0.001),
+        // so local units map to world metres via SCALE. Use raw panel units here.
         var col  = _menuRoot.AddComponent<BoxCollider>();
-        col.size = new Vector3(PANEL_W * SCALE, PANEL_H * SCALE, 0.008f);
+        col.size = new Vector3(PANEL_W, PANEL_H, 8f);
 
         // ── Panel background ──────────────────────────────────────────
         var bgRootRT = MakeRect("BG", _menuRoot.transform, V(0, 0), V(1, 1));

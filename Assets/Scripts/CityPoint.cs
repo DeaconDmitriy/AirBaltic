@@ -41,10 +41,14 @@ public class CityPoint : MonoBehaviour
 
     private void Awake()
     {
-        if (markerRenderer != null)
+        if (markerRenderer != null && markerRenderer.sharedMaterial != null)
         {
             _mat = new Material(markerRenderer.sharedMaterial);
             markerRenderer.material = _mat;
+        }
+        else if (markerRenderer != null)
+        {
+            Debug.LogWarning($"[CityPoint] {gameObject.name}: markerRenderer has no material assigned.", this);
         }
     }
 

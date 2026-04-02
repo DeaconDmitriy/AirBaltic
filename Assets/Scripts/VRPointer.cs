@@ -37,6 +37,13 @@ public class VRPointer : MonoBehaviour
         _line.endColor   = new Color(1f, 0.6f, 0.2f, 0.10f);
     }
 
+    void Start()
+    {
+        // Auto-find the camera rig if not assigned in the Inspector
+        if (cameraRig == null)
+            cameraRig = FindFirstObjectByType<OVRCameraRig>();
+    }
+
     void Update()
     {
         // On PC (no XR device) hide the laser completely
