@@ -30,6 +30,9 @@ public class PlaneController : MonoBehaviour
     /// <summary>True while the player is dragging the plane with the index trigger.</summary>
     public bool IsDragging { get; private set; }
 
+    /// <summary>True while the plane is executing a flight arc (either leg).</summary>
+    public bool IsFlying => _flying;
+
     private Transform _rightAnchor;
     private bool      _active;
     private bool      _flying;
@@ -83,11 +86,23 @@ public class PlaneController : MonoBehaviour
     {
         if (!gameObject.activeInHierarchy) gameObject.SetActive(true);
         StopAllCoroutines();
+        _flying = true;  // pre-set so callers polling IsFlying see it immediately
         Vector3 from   = _departureCopy != null
             ? AboveSurface(_departureCopy.transform.position)
             : transform.position;
         Vector3 target = AboveSurface(destination.transform.position);
         StartCoroutine(FlyArc(from, target, arcFlight: true));
+    }
+
+    /// <summary>
+    /// Updates the logical departure for the next flight leg.
+    /// Call this between two legs of a transfer route so FlyTo() starts from
+    /// the correct city (the transfer point, not the original departure).
+    /// </summary>
+    public void UpdateDeparture(CityPoint city)
+    {
+        _departureCopy     = city;
+        _departureWorldPos = AboveSurface(city.transform.position);
     }
 
     public void ReturnToDeparture()

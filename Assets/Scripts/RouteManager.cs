@@ -87,6 +87,9 @@ public class RouteManager : MonoBehaviour
         if (Instance == this) Instance = null;
     }
 
+    // Route sequence coroutine handle — stored so ResetState() can cancel it mid-flight
+    private Coroutine _routeCoroutine;
+
     // ── Update ────────────────────────────────────────────────────────
 
     private void Update()
@@ -120,6 +123,10 @@ public class RouteManager : MonoBehaviour
         if (_state == AppState.RouteComplete) return;
 
         AudioManager.Instance?.PlayButtonSound(0);
+
+        // Haptic: sharp click on city selection
+        OVRInput.SetControllerVibration(0.1f, 0.4f, OVRInput.Controller.RTouch);
+        StartCoroutine(StopVibrationAfter(0.08f, OVRInput.Controller.RTouch));
 
         OnCityTapped(city);
     }
@@ -257,6 +264,11 @@ public class RouteManager : MonoBehaviour
         _destination = destination;
         _transfer    = FindTransferCity(_departure, destination);
 
+        // Mark destination visually (blue = arrived)
+        destination.SetState(CityPoint.State.Arrived);
+        // Transfer point (if any) stays Selected (orange) — departure is already Selected
+
+        // Draw the full route arc immediately so the user can see the path
         if (_transfer != null)
             DrawTransferArc(_departure.transform.position,
                             _transfer.transform.position,
@@ -264,16 +276,91 @@ public class RouteManager : MonoBehaviour
         else
             DrawArc(_departure.transform.position, destination.transform.position);
 
-        uiManager?.ShowMissionCard(_departure, _transfer, destination);
-
-        planeController?.FlyTo(destination);
-
         // Ambience stops when the plane takes off
         AudioManager.Instance?.StopAmbience();
+
+        // Start sequenced flight — cards appear only after each landing
+        if (_routeCoroutine != null) StopCoroutine(_routeCoroutine);
+        _routeCoroutine = StartCoroutine(ExecuteRouteSequence(destination));
+    }
+
+    /// <summary>
+    /// Executes the full flight sequence with landing-triggered UI cards.
+    ///
+    /// Direct route:   departure ──fly──► destination ──land──► show route card
+    /// Transfer route: departure ──fly──► transfer ──land──► show transfer card
+    ///                 ► wait ► re-spawn at transfer ──fly──► destination ──land──► show route card
+    /// </summary>
+    private System.Collections.IEnumerator ExecuteRouteSequence(CityPoint destination)
+    {
+        if (planeController == null) yield break;
+
+        if (_transfer != null)
+        {
+            // ── Leg 1: departure → transfer ──────────────────────────────────
+            planeController.FlyTo(_transfer);
+
+            // Wait one frame so FlyArc has been entered and _flying is definitely true
+            yield return null;
+            yield return new WaitUntil(() => !planeController.IsFlying);
+
+            // Plane has landed at transfer — show the transfer city info card
+            uiManager?.ShowInfoCard(_transfer);
+
+            // Brief pause so the user can read the card
+            yield return new WaitForSecondsRealtime(2.0f);
+
+            // ── Leg 2: transfer → destination ────────────────────────────────
+            // Update departure so FlyTo() uses the transfer city as the start position
+            planeController.UpdateDeparture(_transfer);
+            planeController.SpawnAt(_transfer);
+
+            // Wait for the pop-in animation to finish (0.4 s in PlaneController)
+            yield return new WaitForSeconds(0.5f);
+
+            planeController.FlyTo(destination);
+
+            yield return null;
+            yield return new WaitUntil(() => !planeController.IsFlying);
+        }
+        else
+        {
+            // ── Direct route: departure → destination ─────────────────────────
+            planeController.FlyTo(destination);
+
+            yield return null;
+            yield return new WaitUntil(() => !planeController.IsFlying);
+        }
+
+        // Plane has landed at the final destination — show the full route card
+        uiManager?.ShowMissionCard(_departure, _transfer, destination);
+
+        // Strong haptic: route completed
+        OVRInput.SetControllerVibration(0.2f, 0.8f, OVRInput.Controller.RTouch);
+        StartCoroutine(StopVibrationAfter(0.15f, OVRInput.Controller.RTouch));
+
+        _routeCoroutine = null;
+    }
+
+    /// <summary>Helper: stops controller vibration after <paramref name="seconds"/> seconds.</summary>
+    private System.Collections.IEnumerator StopVibrationAfter(float seconds, OVRInput.Controller ctrl)
+    {
+        yield return new WaitForSecondsRealtime(seconds);
+        OVRInput.SetControllerVibration(0f, 0f, ctrl);
     }
 
     private void ResetState()
     {
+        // Cancel any in-progress flight sequence
+        if (_routeCoroutine != null)
+        {
+            StopCoroutine(_routeCoroutine);
+            _routeCoroutine = null;
+        }
+
+        // Stop any lingering vibration
+        OVRInput.SetControllerVibration(0f, 0f, OVRInput.Controller.RTouch);
+
         _state        = AppState.Idle;
         _departure    = null;
         _destination  = null;

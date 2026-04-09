@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 #if UNITY_EDITOR
 using UnityEngine.InputSystem;
@@ -18,6 +19,14 @@ public class GlobeRotator : MonoBehaviour
 
     [Header("Move (VR) — left grip")]
     public bool moveEnabled = true;
+
+    [Header("Idle Auto-Rotation")]
+    [Tooltip("Degrees per second the globe spins when nobody is touching it. Set to 0 to disable.")]
+    public float idleRotationSpeed = 4f;
+
+    [Header("Globe Reset  (press both thumbsticks)")]
+    [Tooltip("Duration in seconds for the smooth reset animation.")]
+    public float resetDuration = 0.55f;
 
     [Header("Editor Mouse")]
     public float mouseSensitivity = 0.4f;
@@ -42,6 +51,14 @@ public class GlobeRotator : MonoBehaviour
     private bool    _leftGrabbing;
     private Vector3 _lastLeftPos;
 
+    // Reset
+    private bool _resetting;
+
+    // Initial transform — captured once in Start for the reset feature
+    private Vector3    _initialPosition;
+    private Quaternion _initialRotation;
+    private float      _initialScale;
+
     // Editor
     private bool    _editorDragging;
     private Vector2 _lastEditorMousePos;
@@ -56,7 +73,13 @@ public class GlobeRotator : MonoBehaviour
             _rightAnchor = rig.rightControllerAnchor;
             _leftAnchor  = rig.leftControllerAnchor;
         }
+
         _targetScale = transform.localScale.x;
+
+        // Capture original transform for reset
+        _initialPosition = transform.position;
+        _initialRotation = transform.rotation;
+        _initialScale    = transform.localScale.x;
     }
 
     private void Update()
@@ -64,6 +87,7 @@ public class GlobeRotator : MonoBehaviour
         // Block globe interaction while the pause menu is open
         if (MenuController.IsOpen) return;
 
+        // ── VR / Editor input ──────────────────────────────────────────
         if (!UnityEngine.XR.XRSettings.isDeviceActive)
         {
 #if UNITY_EDITOR
@@ -73,6 +97,7 @@ public class GlobeRotator : MonoBehaviour
         }
         else
         {
+            CheckGlobeReset();
             ThumbstickSpin();
             ThumbstickZoom();
             PinchZoom();
@@ -80,13 +105,76 @@ public class GlobeRotator : MonoBehaviour
             if (moveEnabled) MoveGlobe();
         }
 
-        // Smooth scale lerp — runs in both VR and Editor
+        // ── Idle auto-rotation ─────────────────────────────────────────
+        // Runs whenever nobody is actively interacting with the globe.
+        if (idleRotationSpeed > 0f && !_resetting)
+        {
+#if UNITY_EDITOR
+            bool anyInteraction = _editorDragging || _vrgrabbing || _leftGrabbing || _pinching;
+#else
+            bool anyInteraction = _vrgrabbing || _leftGrabbing || _pinching;
+#endif
+            if (!anyInteraction)
+                transform.Rotate(Vector3.up, idleRotationSpeed * Time.deltaTime, Space.World);
+        }
+
+        // ── Smooth scale lerp (always runs) ───────────────────────────
         float current = transform.localScale.x;
         if (!Mathf.Approximately(current, _targetScale))
         {
             float next = Mathf.Lerp(current, _targetScale, Time.deltaTime * 8f);
             transform.localScale = Vector3.one * next;
         }
+    }
+
+    // ── Globe reset (both thumbsticks) ────────────────────────────────────────
+
+    private void CheckGlobeReset()
+    {
+        bool leftDown  = OVRInput.GetDown(OVRInput.Button.PrimaryThumbstick, OVRInput.Controller.LTouch);
+        bool rightDown = OVRInput.GetDown(OVRInput.Button.PrimaryThumbstick, OVRInput.Controller.RTouch);
+        bool leftHeld  = OVRInput.Get    (OVRInput.Button.PrimaryThumbstick, OVRInput.Controller.LTouch);
+        bool rightHeld = OVRInput.Get    (OVRInput.Button.PrimaryThumbstick, OVRInput.Controller.RTouch);
+
+        bool combo = (leftDown && rightHeld) || (rightDown && leftHeld) || (leftDown && rightDown);
+        if (combo && !_resetting)
+            StartCoroutine(ResetGlobeCoroutine());
+    }
+
+    private IEnumerator ResetGlobeCoroutine()
+    {
+        _resetting   = true;
+        _targetScale = _initialScale;
+
+        Vector3    fromPos = transform.position;
+        Quaternion fromRot = transform.rotation;
+        float      fromSc  = transform.localScale.x;
+        float      elapsed = 0f;
+
+        // Light haptic pulse on reset trigger
+        OVRInput.SetControllerVibration(0.05f, 0.2f, OVRInput.Controller.LTouch);
+        OVRInput.SetControllerVibration(0.05f, 0.2f, OVRInput.Controller.RTouch);
+        yield return new WaitForSeconds(0.08f);
+        OVRInput.SetControllerVibration(0f, 0f, OVRInput.Controller.LTouch);
+        OVRInput.SetControllerVibration(0f, 0f, OVRInput.Controller.RTouch);
+
+        while (elapsed < resetDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t  = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / resetDuration));
+
+            transform.position   = Vector3.Lerp(fromPos, _initialPosition, t);
+            transform.rotation   = Quaternion.Slerp(fromRot, _initialRotation, t);
+            transform.localScale = Vector3.one * Mathf.Lerp(fromSc, _initialScale, t);
+
+            yield return null;
+        }
+
+        transform.position   = _initialPosition;
+        transform.rotation   = _initialRotation;
+        transform.localScale = Vector3.one * _initialScale;
+        _targetScale         = _initialScale;
+        _resetting           = false;
     }
 
     // ── Thumbstick spin (left stick X → Y-axis rotation) ─────────────────────
@@ -98,7 +186,7 @@ public class GlobeRotator : MonoBehaviour
             transform.Rotate(Vector3.up, -stick.x * thumbstickSpeed * Time.deltaTime, Space.World);
     }
 
-    // ── Thumbstick zoom (left stick Y → scale) ────────────────────────────────
+    // ── Thumbstick zoom (left stick Y) ────────────────────────────────────────
 
     private void ThumbstickZoom()
     {
@@ -120,14 +208,13 @@ public class GlobeRotator : MonoBehaviour
 
         bool bothHeld = leftGrip && rightGrip;
 
-        // Start pinch when the second grip is pressed while the first is already held
         if (bothHeld && !_pinching && (leftDown || rightDown))
         {
             _pinching          = true;
             _pinchStartDist    = Vector3.Distance(_leftAnchor.position, _rightAnchor.position);
             _scaleAtPinchStart = _targetScale;
-            _leftGrabbing      = false;   // cancel any active move grab
-            _vrgrabbing        = false;   // cancel any active rotate grab
+            _leftGrabbing      = false;
+            _vrgrabbing        = false;
         }
 
         if (_pinching && bothHeld)
@@ -182,7 +269,6 @@ public class GlobeRotator : MonoBehaviour
         bool grip     = OVRInput.Get    (OVRInput.Button.PrimaryHandTrigger, OVRInput.Controller.LTouch);
         bool gripUp   = OVRInput.GetUp  (OVRInput.Button.PrimaryHandTrigger, OVRInput.Controller.LTouch);
 
-        // Only start a move grab if we are NOT entering a two-hand pinch this frame
         if (gripDown && !_leftGrabbing && !_pinching)
         {
             Ray ray = new Ray(_leftAnchor.position, _leftAnchor.forward);

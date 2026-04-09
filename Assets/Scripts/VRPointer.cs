@@ -4,10 +4,11 @@ using UnityEngine;
 /// VR laser pointer for the right controller.
 /// Responsibilities:
 ///   • Draw the laser line each frame
-///   • On index trigger press → forward the hit city to RouteManager
+///   • Manage city hover state (highlight + haptic when ray enters/exits a city)
+///   • On index trigger press → forward the hit city to RouteManager + haptic click
 ///
 /// City ambience is handled by RouteManager.UpdateProximityAudio() (distance-based),
-/// NOT by this pointer — so no hover logic lives here.
+/// NOT by this pointer.
 /// </summary>
 [RequireComponent(typeof(LineRenderer))]
 public class VRPointer : MonoBehaviour
@@ -20,6 +21,7 @@ public class VRPointer : MonoBehaviour
     public LayerMask rayMask        = ~0;
 
     private LineRenderer _line;
+    private CityPoint    _lastHoveredCity;   // city the ray was on last frame
 
     // ── Lifecycle ─────────────────────────────────────────────────────
 
@@ -39,7 +41,6 @@ public class VRPointer : MonoBehaviour
 
     void Start()
     {
-        // Auto-find the camera rig if not assigned in the Inspector
         if (cameraRig == null)
             cameraRig = FindFirstObjectByType<OVRCameraRig>();
     }
@@ -50,6 +51,7 @@ public class VRPointer : MonoBehaviour
         if (!UnityEngine.XR.XRSettings.isDeviceActive)
         {
             if (_line.enabled) _line.enabled = false;
+            ClearHover();   // clear hover when switching off VR
             return;
         }
 
@@ -60,25 +62,70 @@ public class VRPointer : MonoBehaviour
         Vector3   forward = anchor.forward;
         Vector3   endPt   = origin + forward * maxRayDistance;
 
+        // ── Raycast ────────────────────────────────────────────────────
+        CityPoint hitCity = null;
         if (Physics.Raycast(origin, forward, out RaycastHit hit, maxRayDistance, rayMask))
         {
             endPt = hit.point;
 
-            // When the pause menu is open MenuController handles its own trigger input;
-            // skip city-selection so the trigger press is not double-handled.
-            if (!MenuController.IsOpen &&
-                OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger, OVRInput.Controller.RTouch))
-            {
-                CityPoint city = hit.collider.GetComponentInParent<CityPoint>();
-                if (city != null && RouteManager.Instance != null)
-                    RouteManager.Instance.OnCityClicked(city);
-            }
+            if (!MenuController.IsOpen)
+                hitCity = hit.collider.GetComponentInParent<CityPoint>();
         }
 
-        // Always draw the laser — when the menu is open the beam points at it,
-        // giving the player a clear aiming cue for the menu buttons.
+        // ── Hover management ───────────────────────────────────────────
+        if (hitCity != _lastHoveredCity)
+        {
+            // Left the previous city
+            _lastHoveredCity?.SetHovered(false);
+            _lastHoveredCity = hitCity;
+
+            // Entered a new city
+            if (hitCity != null)
+            {
+                hitCity.SetHovered(true);
+                // Light haptic pulse on hover enter
+                OVRInput.SetControllerVibration(0.03f, 0.12f, OVRInput.Controller.RTouch);
+                StartCoroutine(StopVibrationAfter(0.05f));
+            }
+        }
+        else if (hitCity != null
+                 && hitCity.CurrentState != CityPoint.State.Hovered
+                 && hitCity.CurrentState != CityPoint.State.Selected
+                 && hitCity.CurrentState != CityPoint.State.Arrived)
+        {
+            // Same city but its state was externally reset (e.g. route cancelled) —
+            // re-apply hover so it stays highlighted while the ray is on it
+            hitCity.SetHovered(true);
+        }
+
+        // ── Click / select ─────────────────────────────────────────────
+        if (!MenuController.IsOpen &&
+            OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger, OVRInput.Controller.RTouch))
+        {
+            if (hitCity != null && RouteManager.Instance != null)
+                RouteManager.Instance.OnCityClicked(hitCity);
+                // Note: RouteManager.OnCityClicked already fires its own (stronger) haptic
+        }
+
+        // Always draw the laser — when the menu is open the beam points at it
         _line.enabled = true;
         _line.SetPosition(0, origin);
         _line.SetPosition(1, endPt);
+    }
+
+    // ── Helpers ────────────────────────────────────────────────────────
+
+    /// <summary>Removes hover from the currently tracked city (called on device inactive).</summary>
+    private void ClearHover()
+    {
+        if (_lastHoveredCity == null) return;
+        _lastHoveredCity.SetHovered(false);
+        _lastHoveredCity = null;
+    }
+
+    private System.Collections.IEnumerator StopVibrationAfter(float seconds)
+    {
+        yield return new WaitForSeconds(seconds);
+        OVRInput.SetControllerVibration(0f, 0f, OVRInput.Controller.RTouch);
     }
 }
