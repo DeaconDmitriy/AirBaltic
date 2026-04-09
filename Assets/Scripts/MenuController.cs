@@ -116,7 +116,7 @@ public class MenuController : MonoBehaviour
         var rig = FindFirstObjectByType<OVRCameraRig>();
         if (rig != null)
         {
-            _rightAnchor   = rig.rightHandAnchor;
+            _rightAnchor   = rig.rightControllerAnchor != null ? rig.rightControllerAnchor : rig.rightHandAnchor;
             _headTransform = rig.centerEyeAnchor;
         }
         if (_headTransform == null)
